@@ -1,5 +1,5 @@
-# Llama2
-created this chatbot using ollama llama2
+# Llama3
+created this chatbot using ollama llama3
 import streamlit as st
 import os
 import time
