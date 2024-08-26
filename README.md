@@ -144,7 +144,61 @@ if uploaded_file is not None:
                 message_placeholder.markdown(full_response)
 
         chatbot_message = {"role": "assistant", "message": response_text}
-        st.session_state.chat_history.append(chatbot_message)
+        st.session_state.chat_history.append(chat
 
-else:
-    st.write("Please upload a PDF file to start the chatbot")
+
+        import PyPDF2
+
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with open(pdf_path, 'rb') as file:
+        reader = PyPDF2.PdfReader(file)
+        for page in range(len(reader.pages)):
+            text += reader.pages[page].extract_text()
+    return text
+
+    def chunk_text(text, chunk_size=500):
+    chunks = []
+    words = text.split()
+    for i in range(0, len(words), chunk_size):
+        chunks.append(' '.join(words[i:i + chunk_size]))
+    return chunks
+
+
+
+  import ollama
+
+def generate_embedding(text_chunk):
+    response = ollama.embedding(text_chunk)
+    return response['embedding']  # This assumes the response is a dict with the embedding.
+
+
+
+    import chromadb
+
+# Initialize Chroma DB
+client = chromadb.Client()
+collection = client.create_collection("pdf_chunks")
+
+def store_embeddings(chunks):
+    for i, chunk in enumerate(chunks):
+        embedding = generate_embedding(chunk)
+        collection.add(
+            documents=[chunk],
+            metadatas=[{"chunk_id": i}],
+            embeddings=[embedding]
+        )
+
+
+        def query_pdf_chatbot(question):
+    question_embedding = generate_embedding(question)
+    results = collection.query(
+        query_embeddings=[question_embedding],
+        n_results=1
+    )
+
+    if results['documents']:
+        most_similar_chunk = results['documents'][0][0]
+        return most_similar_chunk
+    else:
+        return "I don't know"
